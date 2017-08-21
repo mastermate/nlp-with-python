@@ -4,7 +4,7 @@ from gensim.models.ldamulticore import LdaMulticore
 import pyLDAvis
 import pyLDAvis.gensim
 import warnings
-import cPickle as pickle
+import _pickle as pickle
 import os
 import spacy
 import codecs
@@ -38,10 +38,10 @@ def main():
     '''
     lda_model_filepath = os.path.join(intermediate_dir, 'lda_model_all')
     # comment when done
-    create_lda_model(trigram_bow_corpus, trigram_dictionary, 3, 50)
+    create_lda_model(trigram_bow_corpus, trigram_dictionary, lda_model_filepath, workers=3)
     lda = LdaMulticore.load(lda_model_filepath)
 
-def create_lda_model(corpus, dict, workers, topics=50):
+def create_lda_model(corpus, dict, lda_model_filepath, workers=1, topics=50):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         

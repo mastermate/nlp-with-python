@@ -33,7 +33,7 @@ def main():
     bigram_model = Phrases.load(bigram_model_filepath)
     
     bigram_sentences_filepath = os.path.join(intermediate_directory, 'bigram_sentences_all.txt')
-    #createBigramFile(unigram_sentences, bigram_model, bigram_sentences_filepath)
+    createNgramFile(unigram_sentences, bigram_model, bigram_sentences_filepath)
     
     print(' ')
     print('----------- Bigrams -----------')
@@ -47,11 +47,11 @@ def main():
     Trigrams
     '''
     trigram_model_filepath = os.path.join(intermediate_directory, 'trigram_model_all')
-    #createNgramModel(bigram_sentences, trigram_model_filepath)
+    createNgramModel(bigram_sentences, trigram_model_filepath)
     trigram_model = Phrases.load(trigram_model_filepath)
     
     trigram_senteces_filepath = os.path.join(intermediate_directory, 'trigram_sentences_all.txt')
-    #createNgramFile(bigram_sentences, trigram_model, trigram_senteces_filepath)
+    createNgramFile(bigram_sentences, trigram_model, trigram_senteces_filepath)
     
     print(' ')
     print('----------- Trigrams -----------')
