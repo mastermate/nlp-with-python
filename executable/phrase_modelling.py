@@ -68,9 +68,9 @@ def main():
     '''
     reviewed_trigrams_filepath = os.path.join(intermediate_directory, 'trigram_reviews_all.txt')
     with codecs.open(reviewed_trigrams_filepath, 'w', encoding='utf_8') as f:
-        for parsed_review in nlp.pipe(line_review(sample_review_filepath), batch_size=10000, n_threads=4):
+        for parsed_review in nlp.pipe(utils.line_review(sample_review_filepath), batch_size=10000, n_threads=4):
             # lemmatise review, removing punctuation
-            unigram_review = [utils.preprocessLemma(token) for token in parsed_review if not punct_space(token)]
+            unigram_review = [utils.preprocessLemma(token) for token in parsed_review if not utils.punct_space(token)]
             
             # first and second order phrase models
             bigram_review = bigram_model[unigram_review]
@@ -94,39 +94,10 @@ def createNgramFile(n_1gram_sents, ngram_model, outputFilePath):
 
 def createUnigramFile(inputFilePath, outputFilePath):
     with codecs.open(outputFilePath, 'w', encoding = 'utf_8') as f:
-        for sent in lemmatized_sentence_corpus(inputFilePath):
+        for sent in utils.lemmatized_sentence_corpus(inputFilePath):
             f.write(sent + '\n')
 
 
-'''
-Aux functions
-'''
-
-def punct_space(token):
-    """
-    helper function to eliminate tokens
-    that are pure punctuation or whitespace
-    """
-    return token.is_punct or token.is_space
-
-def line_review(filename):
-    """
-    generator function to read in reviews from the file
-    and un-escape the original line breaks in the text
-    """
-    with codecs.open(filename, encoding='utf_8') as f:
-        for review in f:
-            yield review.replace('\\n', '\n')
-            
-def lemmatized_sentence_corpus(filename):
-    """
-    generator function to use spaCy to parse reviews,
-    lemmatize the text, and yield sentences
-    """
-    for parsed_review in nlp.pipe(line_review(filename), batch_size=10000, n_threads=4):
-        for sent in parsed_review.sents:
-            yield u' '.join([utils.preprocessLemma(token) for token in sent if not punct_space(token)])
-            
 
 if __name__ == '__main__':
     main()
