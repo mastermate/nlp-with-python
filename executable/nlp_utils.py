@@ -1,6 +1,5 @@
 import spacy
 import codecs
-import spacy
 
 '''
 Aux functions

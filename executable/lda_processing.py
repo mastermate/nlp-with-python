@@ -10,14 +10,20 @@ import os
 import spacy
 import codecs
 import itertools as it
+from gensim.models import Phrases
 from gensim.models.word2vec import LineSentence
 
 
+nlp = spacy.load('en')
+intermediate_dir = os.path.join('..', 'intermediate')
+bigram_model_filepath = os.path.join(intermediate_dir, 'bigram_model_all')
+bigram_model = Phrases.load(bigram_model_filepath)
+trigram_model_filepath = os.path.join(intermediate_dir, 'trigram_model_all')
+trigram_model = Phrases.load(trigram_model_filepath)
 
 def main():
-    intermediate_dir = os.path.join('..', 'intermediate')
-    reviews_filepath = os.path.join(intermediate_dir, 'trigram_reviews_all.txt')
     
+    reviews_filepath = os.path.join(intermediate_dir, 'trigram_reviews_all.txt')
     '''
     Create dictionary
     '''
@@ -43,7 +49,7 @@ def main():
     lda = LdaMulticore.load(lda_model_filepath)
 
     # print topics
-    exploreTopic(lda, topicn = 2)
+    exploreTopic(lda, topicn = 11)
     
     # graphically display topics
     LDAvis_prepared_filepath = os.path.join(intermediate_dir, 'lda_prepared')
@@ -59,8 +65,20 @@ def main():
     #    ldavis_prepared = pickle.load(f)
     #    pyLDAvis.display(ldavis_prepared)
     
+    review_number = 125
+    review = get_sample_review(reviews_filepath, review_number)
+    print('LDA topics for review number {}: \n {}'.format(review_number, review))
+    lda_description(review, lda, trigram_dictionary)
     
-def lda_description(review_text, min_topic_freq=0.05):
+def get_sample_review(reviews_filepath, review_number):
+    """
+    retrieve a particular review index
+    from the reviews file and return it
+    """
+    return list(it.islice(utils.line_review(reviews_filepath),
+                          review_number, review_number+1))[0]    
+    
+def lda_description(review_text, lda, dictionary, min_topic_freq=0.05):
     """
     accept the original text of a review and (1) parse it with spaCy,
     (2) apply text pre-proccessing steps, (3) create a bag-of-words
@@ -81,23 +99,27 @@ def lda_description(review_text, min_topic_freq=0.05):
     
     # remove any remaining stopwords
     trigram_review = [term for term in trigram_review
-                      if not term in spacy.en.STOPWORDS]
+                      if not term in spacy.en.STOP_WORDS]
     
     # create a bag-of-words representation
-    review_bow = trigram_dictionary.doc2bow(trigram_review)
+    review_bow = dictionary.doc2bow(trigram_review)
     
     # create an LDA representation
     review_lda = lda[review_bow]
     
     # sort with the most highly related topics first
-    review_lda = sorted(review_lda, key=lambda (topic_number, freq): -freq)
+    review_lda = sorted(review_lda, key=orderFunc)
     
     for topic_number, freq in review_lda:
         if freq < min_topic_freq:
             break
             
         # print the most highly related topic names and frequencies
-        print('{:25} {}'.format(topic_names[topic_number], round(freq, 3)))
+        print('Topic number {}: {}'.format(topic_number, round(freq, 3)))
+
+def orderFunc(lda_freq):
+    #print(lda_freq)
+    return -lda_freq[1]
 
 def exploreTopic(lda, topicn, nterms = 25):
     
